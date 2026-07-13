@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "PedidosNet": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:65005;http://localhost:65006"
+    }
+  }
+}
