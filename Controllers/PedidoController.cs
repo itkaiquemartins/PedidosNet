@@ -47,6 +47,10 @@ public class PedidoController : ControllerBase
         if (cliente is null)
             return BadRequest("Cliente não encontrado.");
 
+        //Regra 1: cliente bloqueado nem chega a criar pedido
+        if (cliente.Bloqueado)
+            return BadRequest("Cliente bloqueado não pode criar pedidos.");
+
         var itens = new List<ItemPedido>();
 
         foreach (var itemRequest in request.Itens)
@@ -85,6 +89,14 @@ public class PedidoController : ControllerBase
 
         if (pedido.Total > 2000)
             pedido.Total -= pedido.Total * 0.05m;
+
+        //Regra 2: Depois de calcular o total, ainda decidimos o status real
+        if (cliente.Vip)
+            pedido.Status = "EmAnalise";
+
+        //Regra 3: Cliente corporativo com pedido acima de 5000 precisa de validacao
+        if (cliente.Corporativo && pedido.Total > 5000)
+            pedido.Status = "AguardandoValidacao";
 
         _context.Pedidos.Add(pedido);
         await _context.SaveChangesAsync();
