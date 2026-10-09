@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PedidosNet.Data;
+using PedidosNet.Domain;
 using PedidosNet.DTOs;
 using PedidosNet.Models;
 
@@ -11,10 +12,12 @@ namespace PedidosNet.Controllers;
 public class PedidoController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IPedidoFactory _pedidoFactory;
 
-    public PedidoController(AppDbContext context)
+    public PedidoController(AppDbContext context, IPedidoFactory pedidoFactory)
     {
         _context = context;
+        _pedidoFactory = pedidoFactory;
     }
 
     [HttpGet]
@@ -69,17 +72,7 @@ public class PedidoController : ControllerBase
             });
         }
 
-        var pedido = new Pedido
-        {
-            Id = Guid.NewGuid(),
-            ClienteId = cliente.Id,
-            Status = "Pendente",
-            DataCriacao = DateTime.Now,
-            Itens = itens
-        };
-
-        // Calcula o total baseado nos itens
-        pedido.Total = pedido.Itens.Sum(i => i.Preco * i.Quantidade);
+        var pedido = _pedidoFactory.Criar(cliente, itens);
 
         // ⚠️ Regras de negócio direto no controller — o primeiro sinal amarelo
         // piscando no painel . A partir daqui, cada nova regra
@@ -89,14 +82,6 @@ public class PedidoController : ControllerBase
 
         if (pedido.Total > 2000)
             pedido.Total -= pedido.Total * 0.05m;
-
-        //Regra 2: Depois de calcular o total, ainda decidimos o status real
-        if (cliente.Vip)
-            pedido.Status = "EmAnalise";
-
-        //Regra 3: Cliente corporativo com pedido acima de 5000 precisa de validacao
-        if (cliente.Corporativo && pedido.Total > 5000)
-            pedido.Status = "AguardandoValidacao";
 
         _context.Pedidos.Add(pedido);
         await _context.SaveChangesAsync();

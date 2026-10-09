@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PedidosNet.Data;
+using PedidosNet.Domain;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,8 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "PedidosNet — Sistema Ingênuo", Version = "v1" });
 });
+
+builder.Services.AddScoped<IPedidoFactory, PedidoFactory>();
 
 var app = builder.Build();
 

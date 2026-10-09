@@ -17,4 +17,9 @@ public class Pedido
     public DateTime DataCriacao { get; set; }
 
     public List<ItemPedido> Itens { get; set; } = new();
+
+    public void CalcularTotal()
+    {
+        Total = Itens.Sum(i => i.Preco * i.Quantidade);
+    }
 }
